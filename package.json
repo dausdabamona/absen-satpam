@@ -1,0 +1,22 @@
+{
+  "name": "absen-satpam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplikasi Absen Satpam (Piket Pos) Poltek KP Sorong — situs statis GitHub Pages + backend Google Apps Script.",
+  "scripts": {
+    "test": "node test/logika-shift.test.js",
+    "gas:login": "clasp login",
+    "gas:logout": "clasp logout",
+    "gas:whoami": "clasp show-authorized-user",
+    "gas:status": "clasp status",
+    "gas:push": "clasp push -f",
+    "gas:deploy": "clasp deploy -d \"Absen Satpam\"",
+    "gas:list": "clasp deployments",
+    "gas:redeploy": "clasp redeploy",
+    "gas:open": "clasp open-script",
+    "gas:logs": "clasp logs"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.3.0"
+  }
+}

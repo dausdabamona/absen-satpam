@@ -1,0 +1,12 @@
+# Kredensial clasp (OAuth token) — JANGAN pernah di-commit
+.clasprc.json
+google-apps-script/.clasprc.json
+
+# Node / tooling
+node_modules/
+npm-debug.log*
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,52 @@
+name: Deploy ke GitHub Pages
+
+# Menyisipkan URL backend (rahasia) dari GitHub Secret APPS_SCRIPT_URL
+# ke js/config.js saat deploy, sehingga URL TIDAK tersimpan di kode sumber.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Sisipkan URL backend dari Secret
+        env:
+          APPS_SCRIPT_URL: ${{ secrets.APPS_SCRIPT_URL }}
+        run: |
+          if [ -z "$APPS_SCRIPT_URL" ]; then
+            echo "::error::Secret APPS_SCRIPT_URL belum diisi. Buka Settings -> Secrets and variables -> Actions -> New repository secret."
+            exit 1
+          fi
+          sed -i "s#__APPS_SCRIPT_URL__#${APPS_SCRIPT_URL}#g" js/config.js
+          echo "URL backend berhasil disisipkan ke js/config.js"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact situs
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy ke GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

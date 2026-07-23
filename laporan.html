@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daftar Hadir — Absen Satpam</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Toolbar (tidak ikut tercetak) -->
+  <div class="lap-toolbar no-print">
+    <div class="kartu mb-0">
+      <h2 class="mt-0">🖨️ Daftar Hadir Piket Pos Satpam</h2>
+      <p class="keterangan">Lampiran pertanggungjawaban pembayaran. Isi kredensial admin &amp; bulan, lalu Tampilkan &amp; Cetak (A4 landscape).</p>
+      <div id="peringatan-konfig"></div>
+      <div id="pesan-laporan"></div>
+      <div class="toolbar mb-0">
+        <div class="form-grup"><label class="form-label" for="lapEmail">Email admin</label><input type="email" id="lapEmail" class="inline-auto" style="min-width:200px;"></div>
+        <div class="form-grup"><label class="form-label" for="lapPass">Password</label><input type="password" id="lapPass" class="inline-auto" style="min-width:150px;"></div>
+        <div class="form-grup"><label class="form-label" for="lapBulan">Bulan</label><input type="month" id="lapBulan" class="inline-auto"></div>
+        <button class="btn btn-primary btn-kecil inline-auto" id="btnTampilkan">Tampilkan</button>
+        <button class="btn btn-kuning btn-kecil inline-auto" id="btnCetak" disabled>🖨️ Cetak</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dokumen laporan -->
+  <div class="lap-halaman" id="lapHalaman" style="display:none;">
+    <div class="lap-kop">
+      <div class="instansi" id="lapInstansi">—</div>
+      <div class="judul">DAFTAR HADIR PIKET POS SATPAM</div>
+      <div class="bulan" id="lapBulanLabel">—</div>
+    </div>
+
+    <div class="grid-bungkus" style="box-shadow:none;">
+      <table class="lap-grid" id="lapGrid"></table>
+    </div>
+
+    <div class="lap-legenda">
+      <span><span class="kotak lap-hadir"></span> Hadir lengkap (✓)</span>
+      <span><span class="kotak lap-parsial"></span> Masuk/Pulang saja (∆)</span>
+      <span><span class="kotak lap-mangkir"></span> Mangkir (X)</span>
+      <span><span class="kotak lap-izin"></span> Izin/Sakit (I/S/C/DL/L)</span>
+      <span><span class="kotak lap-off" style="background:#fff;"></span> Off (-)</span>
+      <span>× = terlambat / pulang cepat</span>
+    </div>
+
+    <div class="lap-ttd">
+      <div class="kolom-ttd">
+        <div>Koordinator K5 Satpam,</div>
+        <div class="ruang-ttd"></div>
+        <div class="nama-ttd" id="lapKoordinator">—</div>
+      </div>
+      <div class="kolom-ttd">
+        <div id="lapTempatTgl">Sorong, —</div>
+        <div>Mengetahui,</div>
+        <div id="lapJabatanPengesah">—</div>
+        <div class="ruang-ttd"></div>
+        <div class="nama-ttd" id="lapPengesah">—</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/laporan.js"></script>
+</body>
+</html>

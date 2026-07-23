@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#052e16">
+  <title>Admin — Absen Satpam</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="admin-body">
+
+  <!-- ============ LOGIN ============ -->
+  <div id="layar-login" class="login-bungkus">
+    <div class="login-kartu">
+      <div class="logo">🛡️</div>
+      <h2 class="text-tengah mt-0">Panel Admin</h2>
+      <p class="text-tengah text-lembut text-kecil mb-16">Absen Satpam — Piket Pos<br>Poltek KP Sorong</p>
+      <div id="pesan-login"></div>
+      <div id="peringatan-konfig-login"></div>
+      <div class="form-grup">
+        <label class="form-label" for="loginEmail">Email admin</label>
+        <input type="email" id="loginEmail" autocomplete="username" placeholder="admin@...">
+      </div>
+      <div class="form-grup">
+        <label class="form-label" for="loginPass">Password</label>
+        <input type="password" id="loginPass" autocomplete="current-password" placeholder="••••••">
+      </div>
+      <button class="btn btn-primary" id="btnLogin">Masuk</button>
+      <p class="bantuan text-tengah">Password awal <code>admin123</code> — segera ganti di Pengaturan.</p>
+    </div>
+  </div>
+
+  <!-- ============ APLIKASI ADMIN ============ -->
+  <div id="layar-admin" class="admin-shell tersembunyi">
+    <aside class="sidebar">
+      <div class="brand"><span>🛡️</span> Admin Satpam</div>
+      <nav>
+        <button class="nav-link aktif" data-sek="beranda">🏠 Beranda</button>
+        <button class="nav-link" data-sek="jadwal">📅 Jadwal</button>
+        <button class="nav-link" data-sek="tukar">🔁 Tukar Piket</button>
+        <button class="nav-link" data-sek="personel">👤 Personel</button>
+        <button class="nav-link" data-sek="perangkat">📱 Perangkat</button>
+        <button class="nav-link" data-sek="pengaturan">⚙️ Pengaturan</button>
+        <div class="sidebar-pisah">Laporan</div>
+        <a href="rekap.html">📊 Rekap</a>
+        <a href="laporan.html">🖨️ Daftar Hadir</a>
+      </nav>
+      <div class="keluar">
+        <button class="btn btn-abu btn-kecil" id="btnKeluar" style="width:100%;">Keluar</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-topbar">
+        <h1 id="judul-seksi">Beranda</h1>
+        <span class="text-kecil text-lembut" id="labelAdmin"></span>
+      </div>
+      <div class="admin-konten">
+
+        <!-- ---------- BERANDA ---------- -->
+        <section class="admin-seksi aktif" id="sek-beranda">
+          <div id="peringatan-konfig"></div>
+          <div class="toolbar">
+            <div><span class="text-lembut text-kecil">Status piket hari ini</span>
+              <div class="tebal" id="tglBeranda">—</div></div>
+            <button class="btn btn-garis btn-kecil inline-auto" id="btnMuatBeranda">↻ Muat ulang</button>
+          </div>
+          <div id="pesan-beranda"></div>
+          <div class="kpi-grid" id="kpiHariIni"></div>
+
+          <h3>Perangkat menunggu persetujuan</h3>
+          <div id="pendingBeranda"></div>
+        </section>
+
+        <!-- ---------- JADWAL ---------- -->
+        <section class="admin-seksi" id="sek-jadwal">
+          <div class="toolbar">
+            <div class="form-grup">
+              <label class="form-label" for="bulanAdmin">Bulan</label>
+              <input type="month" id="bulanAdmin" class="inline-auto">
+            </div>
+            <button class="btn btn-garis btn-kecil inline-auto" id="btnMuatJadwal">Tampilkan</button>
+            <button class="btn btn-abu btn-kecil inline-auto" id="btnSalinBulan">📋 Salin bulan sebelumnya</button>
+            <button class="btn btn-primary btn-kecil inline-auto" id="btnSimpanJadwal">💾 Simpan Jadwal</button>
+          </div>
+          <p class="bantuan">Klik sel untuk memilih shift. Kode: I=08-16, II=16-24, III=00-08, IV=00-12, V=12-24, “-”=Off. Baris bawah = jumlah penjaga per hari (merah = tak ada penjaga).</p>
+          <div id="pesan-jadwal-admin"></div>
+          <div class="grid-bungkus"><div id="wadahGrid"></div></div>
+        </section>
+
+        <!-- ---------- TUKAR PIKET ---------- -->
+        <section class="admin-seksi" id="sek-tukar">
+          <div class="kartu" style="max-width:560px;">
+            <h3 class="mt-0">Catat Tukar / Ganti Piket</h3>
+            <div id="pesan-tukar"></div>
+            <div class="form-grup">
+              <label class="form-label" for="tukarTanggal">Tanggal piket</label>
+              <input type="date" id="tukarTanggal">
+            </div>
+            <div class="form-grup">
+              <label class="form-label" for="tukarAsal">Personel asal (yang digantikan)</label>
+              <select id="tukarAsal"></select>
+              <div class="bantuan" id="infoShiftAsal">Pilih tanggal &amp; personel untuk melihat shift.</div>
+            </div>
+            <div class="form-grup">
+              <label class="form-label" for="tukarPengganti">Personel pengganti</label>
+              <select id="tukarPengganti"></select>
+            </div>
+            <div class="form-grup">
+              <label class="form-label" for="tukarAlasan">Alasan (opsional)</label>
+              <input type="text" id="tukarAlasan" placeholder="mis. sakit, keperluan keluarga">
+            </div>
+            <div class="switch-baris">
+              <label for="tukarDuaArah" class="ket" style="cursor:pointer;">Tukar dua arah (shift pengganti pada tanggal itu dialihkan balik ke asal)</label>
+              <label class="sakelar"><input type="checkbox" id="tukarDuaArah"><span class="slider"></span></label>
+            </div>
+            <button class="btn btn-primary" id="btnSimpanTukar">Catat Tukar Piket</button>
+          </div>
+
+          <h3>Riwayat Tukar Piket</h3>
+          <div class="tabel-bungkus">
+            <table class="tabel">
+              <thead><tr><th>Tanggal</th><th>Shift</th><th>Asal</th><th>Pengganti</th><th>Alasan</th><th></th></tr></thead>
+              <tbody id="bodyTukar"><tr><td colspan="6" class="text-lembut">Memuat…</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ---------- PERSONEL ---------- -->
+        <section class="admin-seksi" id="sek-personel">
+          <div class="toolbar">
+            <button class="btn btn-primary btn-kecil inline-auto" id="btnTambahPersonel">+ Tambah Personel</button>
+          </div>
+          <div id="pesan-personel"></div>
+          <div class="tabel-bungkus">
+            <table class="tabel">
+              <thead><tr><th>ID</th><th>Nama</th><th>Jabatan</th><th>Status</th><th></th></tr></thead>
+              <tbody id="bodyPersonel"><tr><td colspan="5" class="text-lembut">Memuat…</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ---------- PERANGKAT ---------- -->
+        <section class="admin-seksi" id="sek-perangkat">
+          <div id="pesan-perangkat"></div>
+          <div class="tabel-bungkus">
+            <table class="tabel">
+              <thead><tr><th>Nama</th><th>ID Personel</th><th>Status</th><th>Didaftarkan</th><th>Aksi</th></tr></thead>
+              <tbody id="bodyPerangkat"><tr><td colspan="5" class="text-lembut">Memuat…</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ---------- PENGATURAN ---------- -->
+        <section class="admin-seksi" id="sek-pengaturan">
+          <div id="pesan-pengaturan"></div>
+          <div class="dua-kolom">
+            <div class="kartu">
+              <h3 class="mt-0">Lokasi Pos Jaga (Geofence)</h3>
+              <div class="dua-kolom">
+                <div class="form-grup"><label class="form-label" for="setLat">Latitude</label><input type="text" id="setLat" placeholder="-0.87..."></div>
+                <div class="form-grup"><label class="form-label" for="setLng">Longitude</label><input type="text" id="setLng" placeholder="131.25..."></div>
+              </div>
+              <div class="form-grup"><label class="form-label" for="setRadius">Radius (meter)</label><input type="number" id="setRadius" placeholder="100"></div>
+              <button class="btn btn-kuning btn-kecil" id="btnLokasiSaya">📍 Gunakan Lokasi Saya Sekarang</button>
+              <div class="switch-baris" style="margin-top:14px;">
+                <div><strong>Mode Uji Coba</strong><div class="ket">Abaikan geofence — absen diterima dari mana saja. Matikan saat produksi.</div></div>
+                <label class="sakelar"><input type="checkbox" id="setAbaikanLokasi"><span class="slider"></span></label>
+              </div>
+            </div>
+
+            <div class="kartu">
+              <h3 class="mt-0">Toleransi Waktu</h3>
+              <div class="form-grup"><label class="form-label" for="setTolTelat">Toleransi terlambat masuk (menit)</label><input type="number" id="setTolTelat" value="10"></div>
+              <div class="form-grup"><label class="form-label" for="setTolCepat">Toleransi pulang lebih cepat (menit)</label><input type="number" id="setTolCepat" value="5"></div>
+
+              <h3>Identitas Laporan</h3>
+              <div class="form-grup"><label class="form-label" for="setInstansi">Nama instansi</label><input type="text" id="setInstansi"></div>
+              <div class="form-grup"><label class="form-label" for="setKoordinator">Nama Koordinator K5 (tanda tangan kiri)</label><input type="text" id="setKoordinator"></div>
+              <div class="dua-kolom">
+                <div class="form-grup"><label class="form-label" for="setPengesah">Nama pengesah</label><input type="text" id="setPengesah"></div>
+                <div class="form-grup"><label class="form-label" for="setJabatanPengesah">Jabatan pengesah</label><input type="text" id="setJabatanPengesah"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="kartu" style="max-width:560px;">
+            <h3 class="mt-0">Akun Admin</h3>
+            <div class="form-grup"><label class="form-label" for="setEmailAdmin">Email admin (kosongkan bila tak diubah)</label><input type="email" id="setEmailAdmin" placeholder="email baru"></div>
+            <div class="form-grup"><label class="form-label" for="setPassBaru">Password baru (min. 6 karakter, kosongkan bila tak diubah)</label><input type="password" id="setPassBaru" placeholder="••••••"></div>
+          </div>
+
+          <button class="btn btn-primary" id="btnSimpanPengaturan" style="max-width:300px;">💾 Simpan Semua Pengaturan</button>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal generik -->
+  <div id="modal" class="modal-latar tersembunyi">
+    <div class="modal-kotak">
+      <h3 id="modalJudul">Judul</h3>
+      <div id="modalIsi"></div>
+      <div class="modal-aksi">
+        <button class="btn btn-abu" id="modalBatal">Batal</button>
+        <button class="btn btn-primary" id="modalOke">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

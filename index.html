@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#14532d">
+  <title>Absen Satpam — Piket Pos</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="judul"><span class="ikon">🛡️</span><span>Absen Satpam — Piket Pos</span></div>
+    <div class="sub" id="subInstansi">Politeknik Kelautan dan Perikanan Sorong</div>
+    <div class="jam-blok">
+      <div class="jam" id="jamDigital">--.--.--</div>
+      <div>
+        <div class="tanggal" id="tanggalHari">—</div>
+        <div style="text-align:right;margin-top:3px;"><span class="zona" id="labelZona">WIT</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wadah">
+
+    <!-- Memuat -->
+    <div id="layar-loading" class="status-layar">
+      <div class="pemuat"></div>
+      <p>Memuat…</p>
+    </div>
+
+    <!-- Backend belum dikonfigurasi -->
+    <div id="layar-konfig" class="tersembunyi">
+      <div class="kartu">
+        <div class="pesan peringatan mb-0">
+          <strong>Aplikasi belum terhubung ke server.</strong><br>
+          Alamat backend (Apps Script) belum diisi. Admin perlu mengisi
+          Secret <code>APPS_SCRIPT_URL</code> di GitHub lalu men-deploy ulang.
+        </div>
+      </div>
+    </div>
+
+    <!-- Pendaftaran perangkat -->
+    <div id="layar-daftar" class="tersembunyi">
+      <div class="kartu">
+        <h2>Daftarkan HP Ini</h2>
+        <p class="keterangan mb-16">
+          Pilih nama Anda. Setelah admin menyetujui, HP ini otomatis terhubung
+          ke identitas Anda — tanpa perlu login lagi.
+        </p>
+        <div id="pesan-daftar"></div>
+        <div class="form-grup">
+          <label class="form-label" for="pilihPersonel">Nama Personel</label>
+          <select id="pilihPersonel">
+            <option value="">— memuat daftar… —</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" id="btnDaftar" disabled>Daftarkan Perangkat</button>
+      </div>
+    </div>
+
+    <!-- Menunggu persetujuan -->
+    <div id="layar-pending" class="tersembunyi status-layar">
+      <div class="emoji">⏳</div>
+      <h2>Menunggu Persetujuan</h2>
+      <p>Pendaftaran atas nama <strong id="pendingNama">—</strong> sudah terkirim.<br>
+         Silakan hubungi admin/koordinator untuk menyetujui perangkat ini.</p>
+      <button class="btn btn-garis btn-kecil inline-auto" id="btnCekUlang">Cek Status Lagi</button>
+    </div>
+
+    <!-- Diblokir -->
+    <div id="layar-blokir" class="tersembunyi status-layar">
+      <div class="emoji">🚫</div>
+      <h2>Perangkat Diblokir</h2>
+      <p>Perangkat ini diblokir admin. Hubungi koordinator bila ini keliru.</p>
+    </div>
+
+    <!-- Aplikasi utama -->
+    <div id="layar-utama" class="tersembunyi">
+
+      <!-- Piket Saya -->
+      <div class="kartu piket-saya" id="kartuPiket">
+        <h2>🗓️ Piket Saya</h2>
+        <div class="baris-piket">
+          <span class="label-hari">Hari ini</span>
+          <span class="nilai-shift" id="piketHariIni">—</span>
+        </div>
+        <div class="baris-piket">
+          <span class="label-hari">Besok</span>
+          <span class="nilai-shift" id="piketBesok">—</span>
+        </div>
+      </div>
+
+      <!-- Tab -->
+      <div class="tab-bar">
+        <button class="tab-btn aktif" data-tab="absen">📍 Absen</button>
+        <button class="tab-btn" data-tab="patroli">🔦 Patroli</button>
+        <button class="tab-btn" data-tab="izin">📝 Izin</button>
+        <button class="tab-btn" data-tab="jadwal">📅 Jadwal</button>
+      </div>
+
+      <!-- Tab: Absen -->
+      <div class="tab-panel aktif" id="panel-absen">
+        <div class="kartu">
+          <h3>Absen Masuk / Pulang</h3>
+          <p class="keterangan mb-16">Jenis absen (Masuk/Pulang) ditentukan otomatis oleh server sesuai jadwal &amp; jam.</p>
+          <div id="pesan-absen"></div>
+
+          <div class="form-grup">
+            <label class="form-label">1. Swafoto (selfie) — wajib</label>
+            <label class="tombol-kamera" for="fotoAbsen">📷 Ambil Selfie</label>
+            <input class="input-file-sembunyi" type="file" id="fotoAbsen" accept="image/*" capture="user">
+            <img class="foto-preview" id="previewAbsen" alt="Pratinjau selfie">
+          </div>
+
+          <div class="form-grup">
+            <label class="form-label">2. Lokasi (GPS) — wajib</label>
+            <button class="btn btn-kuning" id="btnLokasiAbsen" type="button">📍 Ambil Lokasi Saya</button>
+            <div class="lokasi-info" id="infoLokasiAbsen">Lokasi belum diambil.</div>
+          </div>
+
+          <div class="form-grup">
+            <label class="form-label" for="ketAbsen">3. Keterangan (opsional)</label>
+            <textarea id="ketAbsen" placeholder="mis. serah terima dari rekan shift sebelumnya"></textarea>
+          </div>
+
+          <button class="btn btn-primary tersembunyi" id="btnKirimAbsen">Kirim Absen</button>
+          <p class="bantuan text-tengah" id="hintAbsen">Ambil selfie dan lokasi dulu untuk mengaktifkan tombol kirim.</p>
+        </div>
+
+        <div class="kartu">
+          <h3 id="judulRingkas">Ringkasan Bulan Ini</h3>
+          <div class="ringkas-grid">
+            <div class="ringkas-item"><div class="angka" id="rkHadir">0</div><div class="label">Hadir (Masuk)</div></div>
+            <div class="ringkas-item telat"><div class="angka" id="rkTelat">0</div><div class="label">Terlambat</div></div>
+            <div class="ringkas-item cepat"><div class="angka" id="rkCepat">0</div><div class="label">Pulang Cepat</div></div>
+          </div>
+          <p class="bantuan">Dihitung per Tanggal Dinas (bukan tanggal kalender).</p>
+        </div>
+      </div>
+
+      <!-- Tab: Patroli -->
+      <div class="tab-panel" id="panel-patroli">
+        <div class="kartu">
+          <div class="banner-patroli tersembunyi" id="bannerPatroli">🔔 Waktunya jurnal patroli! Sudah 2 jam sejak patroli terakhir.</div>
+          <h3>Jurnal Patroli Berfoto</h3>
+          <p class="keterangan mb-16">Catat patroli/kejadian tiap 2 jam selama piket. Foto wajib.</p>
+          <div id="pesan-patroli"></div>
+
+          <div class="form-grup">
+            <label class="form-label" for="kegPatroli">Deskripsi kegiatan / kejadian — wajib</label>
+            <textarea id="kegPatroli" placeholder="mis. Keliling area belakang, situasi aman terkendali"></textarea>
+          </div>
+          <div class="form-grup">
+            <label class="form-label">Foto — wajib</label>
+            <label class="tombol-kamera" for="fotoPatroli">📷 Ambil Foto</label>
+            <input class="input-file-sembunyi" type="file" id="fotoPatroli" accept="image/*" capture="environment">
+            <img class="foto-preview" id="previewPatroli" alt="Pratinjau foto patroli">
+          </div>
+          <div class="form-grup">
+            <button class="btn btn-kuning" id="btnLokasiPatroli" type="button">📍 Ambil Lokasi (opsional)</button>
+            <div class="lokasi-info" id="infoLokasiPatroli">Lokasi belum diambil.</div>
+          </div>
+          <button class="btn btn-primary" id="btnKirimPatroli">Kirim Jurnal Patroli</button>
+        </div>
+      </div>
+
+      <!-- Tab: Izin / Sakit -->
+      <div class="tab-panel" id="panel-izin">
+        <div class="kartu">
+          <h3>Ajukan Izin / Sakit</h3>
+          <div id="pesan-izin"></div>
+          <div class="form-grup">
+            <label class="form-label" for="jenisIzin">Jenis</label>
+            <select id="jenisIzin">
+              <option value="Izin">Izin</option>
+              <option value="Sakit">Sakit</option>
+              <option value="Cuti">Cuti</option>
+              <option value="Dinas Luar">Dinas Luar</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
+          <div class="dua-kolom">
+            <div class="form-grup">
+              <label class="form-label" for="tglMulaiIzin">Tanggal mulai</label>
+              <input type="date" id="tglMulaiIzin">
+            </div>
+            <div class="form-grup">
+              <label class="form-label" for="tglSelesaiIzin">Tanggal selesai</label>
+              <input type="date" id="tglSelesaiIzin">
+            </div>
+          </div>
+          <div class="form-grup">
+            <label class="form-label" for="alasanIzin">Alasan — wajib</label>
+            <textarea id="alasanIzin" placeholder="mis. sakit demam, ada surat dokter"></textarea>
+          </div>
+          <div class="form-grup">
+            <label class="form-label">Foto surat / bukti — wajib</label>
+            <label class="tombol-kamera" for="fotoIzin">📷 Ambil / Pilih Foto Surat</label>
+            <input class="input-file-sembunyi" type="file" id="fotoIzin" accept="image/*">
+            <img class="foto-preview" id="previewIzin" alt="Pratinjau surat">
+          </div>
+          <button class="btn btn-primary" id="btnKirimIzin">Kirim Pengajuan</button>
+        </div>
+      </div>
+
+      <!-- Tab: Jadwal -->
+      <div class="tab-panel" id="panel-jadwal">
+        <div class="kartu">
+          <div class="toolbar mb-16">
+            <div class="form-grup" style="flex:1;">
+              <label class="form-label" for="bulanJadwal">Bulan</label>
+              <input type="month" id="bulanJadwal">
+            </div>
+          </div>
+          <h3 id="judulJadwal">Jadwal Piket</h3>
+          <div id="pesan-jadwal"></div>
+          <ul class="jadwal-list" id="daftarJadwal"></ul>
+        </div>
+      </div>
+
+    </div><!-- /layar-utama -->
+  </div><!-- /wadah -->
+
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

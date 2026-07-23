@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#14532d">
+  <title>Rekap — Absen Satpam</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="judul"><span class="ikon">📊</span><span>Rekap Absensi Satpam</span></div>
+    <div class="sub">Politeknik Kelautan dan Perikanan Sorong</div>
+  </header>
+
+  <div class="admin-konten" style="max-width:1150px;margin:0 auto;">
+    <div id="peringatan-konfig"></div>
+
+    <!-- Akses admin -->
+    <div class="kartu">
+      <div class="toolbar mb-0">
+        <div class="form-grup">
+          <label class="form-label" for="adminPass">Password admin (opsional — untuk lihat semua personel)</label>
+          <input type="password" id="adminPass" class="inline-auto" placeholder="kosongkan = data perangkat ini saja" style="min-width:240px;">
+        </div>
+        <button class="btn btn-primary btn-kecil inline-auto" id="btnBuka">Terapkan</button>
+        <span class="text-kecil" id="statusAkses"></span>
+      </div>
+    </div>
+
+    <!-- Tab mode -->
+    <div class="tab-bar" style="max-width:420px;">
+      <button class="tab-btn aktif" data-mode="absensi">Absensi</button>
+      <button class="tab-btn" data-mode="patroli">Patroli</button>
+      <button class="tab-btn" data-mode="izin">Izin</button>
+    </div>
+
+    <!-- Filter -->
+    <div class="kartu">
+      <div class="toolbar mb-0">
+        <div class="form-grup">
+          <label class="form-label" for="filterBulan">Bulan</label>
+          <input type="month" id="filterBulan" class="inline-auto">
+        </div>
+        <div class="form-grup tersembunyi" id="wadahFilterPersonel">
+          <label class="form-label" for="filterPersonel">Personel</label>
+          <select id="filterPersonel" class="inline-auto" style="min-width:200px;">
+            <option value="">Semua personel</option>
+          </select>
+        </div>
+        <button class="btn btn-garis btn-kecil inline-auto" id="btnMuat">↻ Muat</button>
+        <button class="btn btn-kuning btn-kecil inline-auto" id="btnCsv">⬇ Ekspor CSV</button>
+      </div>
+      <p class="bantuan mb-0" id="infoFilter">Absensi difilter berdasar <strong>Tanggal Dinas</strong>.</p>
+    </div>
+
+    <div id="pesan-rekap"></div>
+    <div class="tabel-bungkus">
+      <table class="tabel" id="tabelRekap">
+        <thead id="theadRekap"></thead>
+        <tbody id="tbodyRekap"><tr><td class="text-lembut">Memuat…</td></tr></tbody>
+      </table>
+    </div>
+    <p class="bantuan text-tengah" id="jumlahBaris"></p>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/rekap.js"></script>
+</body>
+</html>

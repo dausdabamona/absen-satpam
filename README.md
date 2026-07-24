@@ -108,16 +108,40 @@ menyetel password admin awal `admin123`.
 
 ### 2) Deploy Web App + kelola deployment
 
-Buat deployment web app agar dapat URL `/exec`:
+> **Penting — akses publik.** Agar dipanggil `fetch` lintas-origin **tanpa
+> login**, web app harus benar-benar publik. Di `appsscript.json` nilainya
+> **`"access": "ANYONE_ANONYMOUS"`** (= "Anyone" di dialog UI). Nilai
+> `"ANYONE"` pada manifest justru berarti *"Anyone with a Google Account"* →
+> tetap minta login → `fetch` kena CORS (`No 'Access-Control-Allow-Origin'`)
+> + `401`/redirect. `clasp deploy` memakai setelan manifest ini, jadi pastikan
+> sudah `ANYONE_ANONYMOUS` sebelum deploy.
+
+**Cara cepat (satu alur push → deploy → kelola):**
 
 ```bash
+npm run gas:deploy-all                   # push + BUAT deployment baru
+npm run gas:deploy-all -- <DeploymentID> # push + PERBARUI (URL /exec tetap)
+```
+
+Skrip `scripts/deploy-gas.sh` mengecek login, menampilkan berkas yang di-push,
+`clasp push`, membuat/memperbarui deployment, lalu memuat daftar deployment dan
+mencetak URL `/exec` + langkah verifikasi.
+
+**Manual/bertahap:**
+
+```bash
+npm run gas:push                         # unggah Code.gs + appsscript.json
 npm run gas:deploy                       # = clasp deploy -d "Absen Satpam"
 # → catat "Deployment ID" (AKfycb…)
 # URL backend = https://script.google.com/macros/s/<Deployment ID>/exec
 ```
 
-Atau manual di editor: **Deploy → New deployment → Web app**, *Execute as: Me*,
+Atau di editor: **Deploy → New deployment → Web app**, *Execute as: Me*,
 *Who has access: **Anyone***, lalu salin URL `/exec`.
+
+Verifikasi: buka URL `/exec` di browser → harus tampil
+`{"status":"success","message":"API Absen Satpam aktif."}`. Bila muncul halaman
+login Google, akses **belum** publik (perbaiki `access` lalu deploy versi baru).
 
 **Update backend berikutnya** — supaya URL `/exec` **tetap sama**, perbarui
 deployment yang sama (jangan buat baru):
@@ -210,7 +234,7 @@ hadir/parsial/mangkir/izin, plus kolom ringkasan & blok tanda tangan.
 |---|---|
 | `clasp push`: *"User has not enabled the Apps Script API"* | Aktifkan di <https://script.google.com/home/usersettings>, tunggu ~1 menit |
 | Frontend: "Server belum dikonfigurasi" | Secret `APPS_SCRIPT_URL` belum diisi / belum deploy ulang Pages |
-| Login/absen gagal + Console browser: *"No 'Access-Control-Allow-Origin' header"* dan `POST … 401 (Unauthorized)` | **Deployment web app tidak dapat diakses publik.** Buka editor Apps Script → **Deploy → Manage deployments** → ✏️ edit deployment aktif → **Execute as: Me**, **Who has access: Anyone** → set **Version: New version** → **Deploy**. Pastikan Secret `APPS_SCRIPT_URL` memakai URL `/exec` (bukan `/dev`). Selesai deploy, otorisasi ulang bila diminta. |
+| Login/absen gagal + Console browser: *"No 'Access-Control-Allow-Origin' header"* dan `POST … 401 (Unauthorized)` / `net::ERR_FAILED` | **Web app minta login (belum publik).** Pastikan `appsscript.json` → `"access": "ANYONE_ANONYMOUS"` (bukan `"ANYONE"` yang = *Anyone with Google account*), lalu **push + deploy versi baru** (`npm run gas:deploy-all -- <DeploymentID>`). Di UI: **Manage deployments → ✏️ → Who has access: Anyone → Version: New version → Deploy**. Cek: buka URL `/exec` di browser → harus JSON `status:success`, bukan halaman login. Pastikan Secret `APPS_SCRIPT_URL` memakai URL `/exec` (bukan `/dev`). |
 | Absen ditolak "di luar area pos" | Set lokasi & radius benar, atau hidupkan Mode Uji Coba sementara |
 | "Tidak ada jadwal piket di sekitar waktu ini" | Jadwal bulan itu belum diisi, atau ada tukar piket yang belum dicatat |
 | Personel tak muncul di daftar | Pastikan personel **Aktif** di menu Personel |

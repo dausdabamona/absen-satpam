@@ -13,6 +13,7 @@
     "gas:deploy": "clasp deploy -d \"Absen Satpam\"",
     "gas:list": "clasp deployments",
     "gas:redeploy": "clasp redeploy",
+    "gas:deploy-all": "bash scripts/deploy-gas.sh",
     "gas:open": "clasp open-script",
     "gas:logs": "clasp logs"
   },

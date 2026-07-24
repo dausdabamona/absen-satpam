@@ -32,6 +32,7 @@ const SHEET_PERANGKAT = "Perangkat";
 const SHEET_PERSONEL = "Personel";
 const SHEET_JADWAL = "Jadwal";
 const SHEET_TUKAR = "TukarPiket";
+const SHEET_OPERATOR = "Operator";
 const FOLDER_NAME = "Foto Absen Satpam";
 
 const JENIS_IZIN = ["Izin", "Sakit", "Cuti", "Dinas Luar", "Lainnya"];
@@ -73,6 +74,12 @@ const HEADER_TUKAR = [
   "Timestamp", "Tanggal", "Shift", "ID Asal", "Nama Asal",
   "ID Pengganti", "Nama Pengganti", "Alasan"
 ];
+/* Operator = akun admin tambahan (login penuh seperti admin, tetapi hanya
+   admin utama yang boleh menambah/menghapus operator & mengubah akun utama). */
+const HEADER_OPERATOR = ["Email", "Password", "Nama", "Aktif"];
+const SEED_OPERATOR = [
+  ["skprahim05@gmail.com", "operator123", "Operator", "ya"]
+];
 
 /* ---------- Seed personel & jadwal Juli 2026 (dari Jadwal Piket Pos) ---------- */
 const SEED_PERSONEL = [
@@ -95,7 +102,7 @@ const DEFAULT_TOL_CEPAT = 5;   // menit toleransi pulang lebih awal
 /* ====================== SETUP ============================== */
 function setup() {
   getSheetAbsen(); getSheetPatroli(); getSheetIzin();
-  getSheetPerangkat(); getSheetPersonel(); getSheetJadwal(); getSheetTukar();
+  getSheetPerangkat(); getSheetPersonel(); getSheetJadwal(); getSheetTukar(); getSheetOperator();
   perbaikiHeader();
   seedDataAwal();
   const p = props();
@@ -139,6 +146,8 @@ function doPost(e) {
       case "simpanPersonel":     return simpanPersonel(data);
       case "dataLaporan":        return dataLaporan(data);
       case "simpanPengaturan":   return simpanPengaturan(data);
+      case "simpanOperator":     return simpanOperator(data);
+      case "hapusOperator":      return hapusOperator(data);
       default:
         return jsonOutput({ status: "error", message: "Aksi tidak dikenal: " + data.action });
     }
@@ -518,7 +527,9 @@ function adminData(data) {
       return { deviceId: d.deviceId, personelId: d.personelId, nama: d.nama, status: d.status, didaftarkan: d.didaftarkan instanceof Date ? fmt(d.didaftarkan, "yyyy-MM-dd HH:mm") : d.didaftarkan };
     }),
     personel: getPersonel().map(function (x) { return { id: x.id, nama: x.nama, jabatan: x.jabatan, aktif: x.aktif }; }),
-    pengaturan: getPengaturanPublic()
+    pengaturan: getPengaturanPublic(),
+    isPrimary: isPrimaryAdmin(data),
+    operator: getOperator().map(function (o) { return { email: o.email, nama: o.nama, aktif: o.aktif }; })
   });
 }
 
@@ -633,6 +644,10 @@ function dataLaporan(data) {
 /* ---------- Pengaturan ---------- */
 function simpanPengaturan(data) {
   if (!cekAdmin(data)) return jsonOutput({ status: "error", message: "Email atau password admin salah." });
+  // Perubahan akun admin utama hanya boleh oleh admin utama (bukan operator).
+  if ((data.passwordBaru || data.emailAdminBaru) && !isPrimaryAdmin(data)) {
+    return jsonOutput({ status: "error", message: "Hanya admin utama yang dapat mengubah email/password admin utama." });
+  }
   const p = props();
   if (data.lat !== undefined && data.lat !== "") p.setProperty("POS_LAT", String(data.lat));
   if (data.lng !== undefined && data.lng !== "") p.setProperty("POS_LNG", String(data.lng));
@@ -665,10 +680,61 @@ function getAdminEmail() {
   if (!em) { em = "dausdaba@polikpsorong.ac.id"; props().setProperty("ADMIN_EMAIL", em); }
   return em;
 }
-function cekAdmin(data) {
+function isPrimaryAdmin(data) {
   const emailOk = data.email !== undefined && String(data.email).trim().toLowerCase() === getAdminEmail().toLowerCase();
   const passOk = data.password !== undefined && String(data.password) === getAdminPassword();
   return emailOk && passOk;
+}
+function cekAdmin(data) {
+  if (isPrimaryAdmin(data)) return true;
+  if (data.email === undefined || data.password === undefined) return false;
+  const email = String(data.email).trim().toLowerCase();
+  const pass = String(data.password);
+  const ops = getOperator();
+  for (var i = 0; i < ops.length; i++) {
+    if (ops[i].aktif && ops[i].email.toLowerCase() === email && ops[i].password === pass) return true;
+  }
+  return false;
+}
+
+/* ---------- Operator (akun admin tambahan) ---------- */
+function getOperator() {
+  const values = getSheetOperator().getDataRange().getValues();
+  values.shift();
+  return values.map(function (r, i) {
+    return { rowIndex: i + 2, email: String(r[0] || "").trim(), password: String(r[1] || ""), nama: r[2] || "", aktif: String(r[3] || "ya") === "ya" };
+  }).filter(function (x) { return x.email; });
+}
+function cariOperator(email) {
+  const e = String(email || "").trim().toLowerCase();
+  return getOperator().filter(function (o) { return o.email.toLowerCase() === e; })[0] || null;
+}
+function simpanOperator(data) {
+  if (!isPrimaryAdmin(data)) return jsonOutput({ status: "error", message: "Hanya admin utama yang dapat mengelola operator." });
+  const email = String(data.emailOperator || "").trim();
+  if (!email || email.indexOf("@") === -1) return jsonOutput({ status: "error", message: "Email operator tidak valid." });
+  if (email.toLowerCase() === getAdminEmail().toLowerCase()) return jsonOutput({ status: "error", message: "Email itu sudah menjadi admin utama." });
+  const sheet = getSheetOperator();
+  const ada = cariOperator(email);
+  let password = ada ? ada.password : "";
+  if (data.passwordOperator) {
+    if (String(data.passwordOperator).length < 6) return jsonOutput({ status: "error", message: "Password operator minimal 6 karakter." });
+    password = String(data.passwordOperator);
+  }
+  if (!ada && !password) return jsonOutput({ status: "error", message: "Password wajib diisi untuk operator baru." });
+  const nama = data.namaOperator !== undefined && String(data.namaOperator).trim() ? String(data.namaOperator).trim() : (ada ? ada.nama : "Operator");
+  const aktif = data.aktifOperator === false ? "tidak" : "ya";
+  const row = [email, password, nama, aktif];
+  if (ada) sheet.getRange(ada.rowIndex, 1, 1, row.length).setValues([row]);
+  else sheet.appendRow(row);
+  return jsonOutput({ status: "success", message: "Operator " + email + " tersimpan." });
+}
+function hapusOperator(data) {
+  if (!isPrimaryAdmin(data)) return jsonOutput({ status: "error", message: "Hanya admin utama yang dapat mengelola operator." });
+  const ada = cariOperator(data.emailOperator);
+  if (!ada) return jsonOutput({ status: "error", message: "Operator tidak ditemukan." });
+  getSheetOperator().deleteRow(ada.rowIndex);
+  return jsonOutput({ status: "success", message: "Operator dihapus." });
 }
 
 /* ====================== DATA HELPER ==================== */
@@ -732,6 +798,19 @@ function getSheetPerangkat() { return getOrCreateSheet(SHEET_PERANGKAT, HEADER_P
 function getSheetPersonel() { return getOrCreateSheet(SHEET_PERSONEL, HEADER_PERSONEL); }
 function getSheetJadwal() { return getOrCreateSheet(SHEET_JADWAL, HEADER_JADWAL); }
 function getSheetTukar() { return getOrCreateSheet(SHEET_TUKAR, HEADER_TUKAR); }
+function getSheetOperator() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_OPERATOR);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_OPERATOR);
+    sheet.appendRow(HEADER_OPERATOR);
+    sheet.getRange(1, 1, 1, HEADER_OPERATOR.length).setFontWeight("bold");
+    sheet.setFrozenRows(1);
+    // Seed operator awal saat sheet pertama kali dibuat (tanpa perlu jalankan setup ulang).
+    SEED_OPERATOR.forEach(function (r) { sheet.appendRow(r); });
+  }
+  return sheet;
+}
 function getOrCreateSheet(nama, header) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(nama);

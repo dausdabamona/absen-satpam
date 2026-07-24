@@ -184,13 +184,31 @@
             </div>
           </div>
 
-          <div class="kartu" style="max-width:560px;">
-            <h3 class="mt-0">Akun Admin</h3>
+          <div class="kartu" style="max-width:560px;" id="kartuAkunAdmin">
+            <h3 class="mt-0">Akun Admin Utama</h3>
             <div class="form-grup"><label class="form-label" for="setEmailAdmin">Email admin (kosongkan bila tak diubah)</label><input type="email" id="setEmailAdmin" placeholder="email baru"></div>
             <div class="form-grup"><label class="form-label" for="setPassBaru">Password baru (min. 6 karakter, kosongkan bila tak diubah)</label><input type="password" id="setPassBaru" placeholder="••••••"></div>
           </div>
 
           <button class="btn btn-primary" id="btnSimpanPengaturan" style="max-width:300px;">💾 Simpan Semua Pengaturan</button>
+
+          <div class="kartu" style="max-width:640px;margin-top:22px;" id="kartuOperator">
+            <h3 class="mt-0">Operator (akun admin tambahan)</h3>
+            <p class="bantuan">Operator bisa login &amp; mengelola aplikasi seperti admin (kecuali menambah/menghapus operator dan mengubah akun admin utama). Hanya admin utama yang melihat menu ini.</p>
+            <div id="pesan-operator"></div>
+            <div class="tabel-bungkus" style="box-shadow:none;border:1px solid var(--garis);">
+              <table class="tabel">
+                <thead><tr><th>Email</th><th>Nama</th><th>Status</th><th></th></tr></thead>
+                <tbody id="bodyOperator"><tr><td colspan="4" class="text-lembut">—</td></tr></tbody>
+              </table>
+            </div>
+            <div class="dua-kolom" style="margin-top:14px;">
+              <div class="form-grup"><label class="form-label" for="opEmail">Email operator</label><input type="email" id="opEmail" placeholder="nama@gmail.com"></div>
+              <div class="form-grup"><label class="form-label" for="opNama">Nama</label><input type="text" id="opNama" placeholder="Nama operator"></div>
+            </div>
+            <div class="form-grup"><label class="form-label" for="opPass">Password (isi untuk operator baru / ganti password)</label><input type="password" id="opPass" placeholder="min. 6 karakter"></div>
+            <button class="btn btn-primary btn-kecil inline-auto" id="btnTambahOperator">Simpan Operator</button>
+          </div>
         </section>
 
       </div>

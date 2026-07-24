@@ -117,11 +117,14 @@
       CACHE.personel = r.personel || [];
       CACHE.pengaturan = r.pengaturan || {};
       CACHE.perangkat = r.perangkat || [];
+      CACHE.operator = (r.operator !== undefined) ? r.operator : null;
+      CACHE.isPrimary = (r.isPrimary !== undefined) ? r.isPrimary : undefined;
       isiFormPengaturan();
       isiDropdownTukar();
       renderPersonel();
       renderPerangkat();
       renderPendingBeranda();
+      renderOperator();
     }).catch(function () { pesan($("pesan-beranda"), "error", ERR_JARINGAN); });
   }
 
@@ -489,6 +492,51 @@
   }
 
   /* ============================================================
+     OPERATOR (akun admin tambahan) — hanya admin utama
+     ============================================================ */
+  function renderOperator() {
+    var kartu = $("kartuOperator");
+    var kartuAkun = $("kartuAkunAdmin");
+    // Backend belum diperbarui bila tak ada field operator → sembunyikan menu operator.
+    var backendBaru = CACHE.operator !== null && CACHE.operator !== undefined;
+    var primary = (CACHE.isPrimary === undefined) ? true : CACHE.isPrimary;
+    if (kartuAkun) kartuAkun.style.display = primary ? "" : "none";
+    if (kartu) kartu.style.display = (backendBaru && primary) ? "" : "none";
+    if (!(backendBaru && primary)) return;
+    var body = $("bodyOperator");
+    if (!CACHE.operator.length) { body.innerHTML = '<tr><td colspan="4" class="text-lembut">Belum ada operator.</td></tr>'; return; }
+    var html = "";
+    CACHE.operator.forEach(function (o) {
+      html += '<tr><td>' + esc(o.email) + '</td><td>' + esc(o.nama) + '</td>' +
+        '<td>' + (o.aktif ? '<span class="tanda-aktif">Aktif</span>' : '<span class="tanda-nonaktif">Nonaktif</span>') + '</td>' +
+        '<td class="aksi-sel"><button class="btn btn-merah btn-kecil" data-hapusoperator="' + esc(o.email) + '">Hapus</button></td></tr>';
+    });
+    body.innerHTML = html;
+  }
+  function tambahOperator() {
+    var email = $("opEmail").value.trim();
+    var nama = $("opNama").value.trim();
+    var pass = $("opPass").value;
+    if (!email) { pesan($("pesan-operator"), "error", "Email operator wajib diisi."); return; }
+    var btn = $("btnTambahOperator"); setMuat(btn, true, "Menyimpan…"); pesan($("pesan-operator"), "", "");
+    postAdmin("simpanOperator", { emailOperator: email, namaOperator: nama, passwordOperator: pass, aktifOperator: true }).then(function (r) {
+      if (r && r.status === "success") {
+        pesan($("pesan-operator"), "sukses", r.message || "Operator tersimpan.");
+        $("opEmail").value = ""; $("opNama").value = ""; $("opPass").value = "";
+        muatSemuaDasar();
+      } else pesan($("pesan-operator"), "error", (r && r.message) || "Gagal menyimpan operator.");
+    }).catch(function () { pesan($("pesan-operator"), "error", ERR_JARINGAN); })
+      .then(function () { setMuat(btn, false); });
+  }
+  function hapusOperator(email) {
+    if (!confirm("Hapus operator " + email + "?")) return;
+    postAdmin("hapusOperator", { emailOperator: email }).then(function (r) {
+      if (r && r.status === "success") { pesan($("pesan-operator"), "sukses", "Operator dihapus."); muatSemuaDasar(); }
+      else pesan($("pesan-operator"), "error", (r && r.message) || "Gagal menghapus operator.");
+    }).catch(function () { pesan($("pesan-operator"), "error", ERR_JARINGAN); });
+  }
+
+  /* ============================================================
      PENGATURAN
      ============================================================ */
   function isiFormPengaturan() {
@@ -583,6 +631,7 @@
     $("btnTambahPersonel").addEventListener("click", function () { formPersonel(null); });
     $("btnLokasiSaya").addEventListener("click", gunakanLokasiSaya);
     $("btnSimpanPengaturan").addEventListener("click", simpanPengaturan);
+    $("btnTambahOperator").addEventListener("click", tambahOperator);
 
     $("modalBatal").addEventListener("click", modalTutup);
     $("modalOke").addEventListener("click", function () { if (modalCb) modalCb(); });
@@ -598,6 +647,7 @@
       else if (t.getAttribute("data-editpersonel")) { var id = t.getAttribute("data-editpersonel"); formPersonel(CACHE.personel.filter(function (x) { return x.id === id; })[0]); }
       else if (t.getAttribute("data-nonaktif")) setAktifPersonel(t.getAttribute("data-nonaktif"), false);
       else if (t.getAttribute("data-aktifkan")) setAktifPersonel(t.getAttribute("data-aktifkan"), true);
+      else if (t.getAttribute("data-hapusoperator")) hapusOperator(t.getAttribute("data-hapusoperator"));
     });
   }
 

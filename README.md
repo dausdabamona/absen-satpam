@@ -173,6 +173,13 @@ Ringkasan skrip npm (`package.json`):
 5. **Perangkat** → **Setujui** HP personel yang mendaftar.
 6. **Tukar Piket** → catat bila ada pengalihan piket (memengaruhi absen & laporan).
 
+> **Operator (akun admin tambahan):** admin utama dapat menambah operator di
+> **Pengaturan → Operator** (email + password, min. 6 karakter). Operator bisa
+> login & mengelola aplikasi seperti admin, KECUALI menambah/menghapus operator
+> lain dan mengubah akun admin utama. Operator awal sudah ter-seed:
+> `skprahim05@gmail.com` (password awal `operator123` — segera ganti). Data
+> operator disimpan di sheet **Operator**.
+
 ### Personel (HP)
 
 1. Buka situs → pilih nama dari daftar → **Daftarkan Perangkat** → tunggu admin menyetujui.

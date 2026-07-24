@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+      - claude/cek-6f7m12
   workflow_dispatch:
 
 permissions:

@@ -13,6 +13,14 @@
   }
   function tampil(el, ya) { if (el) el.classList.toggle("tersembunyi", !ya); }
   function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+  function normalWa(raw) {
+    var d = String(raw || "").replace(/\D/g, "");
+    if (!d) return "";
+    if (d.indexOf("62") === 0) return d;
+    if (d.charAt(0) === "0") return "62" + d.slice(1);
+    if (d.charAt(0) === "8") return "62" + d;
+    return d;
+  }
   function pesan(el, tipe, teks) { if (el) el.innerHTML = teks ? '<div class="pesan ' + tipe + '">' + esc(teks) + '</div>' : ""; }
   var ERR_JARINGAN = "Gagal terhubung. Periksa koneksi lalu coba lagi.";
 
@@ -468,7 +476,7 @@
      ============================================================ */
   function renderPerangkat() {
     var body = $("bodyPerangkat");
-    if (!CACHE.perangkat || !CACHE.perangkat.length) { body.innerHTML = '<tr><td colspan="5" class="text-lembut">Belum ada perangkat terdaftar.</td></tr>'; return; }
+    if (!CACHE.perangkat || !CACHE.perangkat.length) { body.innerHTML = '<tr><td colspan="6" class="text-lembut">Belum ada perangkat terdaftar.</td></tr>'; return; }
     var html = "";
     CACHE.perangkat.forEach(function (d) {
       var badge = d.status === "disetujui" ? '<span class="badge-status badge-ok">disetujui</span>'
@@ -478,7 +486,10 @@
       if (d.status !== "disetujui") aksi += '<button class="btn btn-primary btn-kecil" data-setuju="' + esc(d.deviceId) + '">Setujui</button>';
       if (d.status !== "diblokir") aksi += '<button class="btn btn-merah btn-kecil" data-blokir="' + esc(d.deviceId) + '">Blokir</button>';
       aksi += '<button class="btn btn-abu btn-kecil" data-hapusperangkat="' + esc(d.deviceId) + '">Hapus</button>';
-      html += '<tr><td>' + esc(d.nama) + '</td><td>' + esc(d.personelId) + '</td><td>' + badge + '</td><td class="text-kecil">' + esc(d.didaftarkan || "") + '</td><td class="aksi-sel">' + aksi + '</td></tr>';
+      var waSel = d.noWa
+        ? esc(d.noWa) + ' <a class="btn btn-primary btn-kecil" target="_blank" rel="noopener" href="https://wa.me/' + normalWa(d.noWa) + '">💬 Chat</a>'
+        : '<span class="text-lembut">—</span>';
+      html += '<tr><td>' + esc(d.nama) + '</td><td>' + esc(d.personelId) + '</td><td>' + badge + '</td><td class="text-kecil">' + esc(d.didaftarkan || "") + '</td><td class="text-kecil">' + waSel + '</td><td class="aksi-sel">' + aksi + '</td></tr>';
     });
     body.innerHTML = html;
   }
@@ -556,6 +567,9 @@
     $("setKoordinator").value = s.namaKoordinator || "";
     $("setPengesah").value = s.namaPengesah || "";
     $("setJabatanPengesah").value = s.jabatanPengesah || "";
+    $("setNoWaDarurat").value = s.noWaDarurat || "";
+    $("setNoWaAdmin").value = s.noWaAdmin || "";
+    $("setLinkGrupWa").value = s.linkGrupWa || "";
     $("setEmailAdmin").value = "";
     $("setPassBaru").value = "";
   }
@@ -580,7 +594,10 @@
       namaInstansi: $("setInstansi").value.trim(),
       namaKoordinator: $("setKoordinator").value.trim(),
       namaPengesah: $("setPengesah").value.trim(),
-      jabatanPengesah: $("setJabatanPengesah").value.trim()
+      jabatanPengesah: $("setJabatanPengesah").value.trim(),
+      noWaDarurat: $("setNoWaDarurat").value.trim(),
+      noWaAdmin: $("setNoWaAdmin").value.trim(),
+      linkGrupWa: $("setLinkGrupWa").value.trim()
     };
     if (pass) payload.passwordBaru = pass;
     var emailBaru = $("setEmailAdmin").value.trim();

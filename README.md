@@ -194,8 +194,12 @@ Ringkasan skrip npm (`package.json`):
    geofence aktif.
 4. **Jadwal** → pilih bulan → isi grid shift → **Simpan**. Tombol "Salin bulan
    sebelumnya" mempercepat penyusunan.
-5. **Perangkat** → **Setujui** HP personel yang mendaftar.
+5. **Perangkat** → **Setujui** HP personel yang mendaftar. Kolom **No WA**
+   menampilkan nomor WhatsApp tiap personel + tombol **💬 Chat**.
 6. **Tukar Piket** → catat bila ada pengalihan piket (memengaruhi absen & laporan).
+7. **Pengaturan → Kontak Darurat (WhatsApp)** → isi **Nomor WA Darurat/Admin** dan
+   (opsional) **Link Grup**. Nomor ini jadi tujuan tombol **🆘 Darurat** di HP
+   personel. (Nomor WA tiap personel diisi sendiri saat mendaftarkan perangkat.)
 
 > **Operator (akun admin tambahan):** admin utama dapat menambah operator di
 > **Pengaturan → Operator** (email + password, min. 6 karakter). Operator bisa
@@ -206,7 +210,11 @@ Ringkasan skrip npm (`package.json`):
 
 ### Personel (HP)
 
-1. Buka situs → pilih nama dari daftar → **Daftarkan Perangkat** → tunggu admin menyetujui.
+1. Buka situs → pilih nama dari daftar → isi **Nomor WhatsApp** → **Daftarkan
+   Perangkat** → tunggu admin menyetujui.
+   - Tombol **🆘 Darurat** selalu tersedia (bahkan sebelum disetujui): kirim pesan
+     WhatsApp berisi nama, waktu, & lokasi GPS ke koordinator/admin atau ke grup.
+     Tetap berfungsi walau server sedang tak terjangkau (nomor di‑cache di HP).
 2. Setelah disetujui: **Absen** (selfie + Ambil Lokasi → Kirim), jenis
    Masuk/Pulang otomatis dari server.
 3. **Patroli** tiap 2 jam (foto wajib) — ada pengingat saat tab terbuka.

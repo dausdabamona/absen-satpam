@@ -65,7 +65,7 @@ const HEADER_IZIN = [
   "Tanggal Mulai", "Tanggal Selesai", "Alasan", "Foto Surat"
 ];
 const HEADER_PERANGKAT = [
-  "Device ID", "ID Personel", "Nama", "Status", "Didaftarkan", "Diperbarui"
+  "Device ID", "ID Personel", "Nama", "Status", "Didaftarkan", "Diperbarui", "No WA"
 ];
 const HEADER_PERSONEL = ["ID Personel", "Nama", "Jabatan", "Aktif"];
 const HEADER_JADWAL = ["Bulan", "ID Personel", "Nama"]
@@ -115,6 +115,10 @@ function setup() {
   if (!p.getProperty("NAMA_KOORDINATOR")) p.setProperty("NAMA_KOORDINATOR", "Klemens M. Burdam");
   if (!p.getProperty("NAMA_PENGESAH")) p.setProperty("NAMA_PENGESAH", "Abdullah Sidiq, A.Md.,S.Pi.,M.Pi");
   if (!p.getProperty("JABATAN_PENGESAH")) p.setProperty("JABATAN_PENGESAH", "Kasub Bagian Umum");
+  // Kontak darurat WhatsApp — diisi admin lewat menu Pengaturan (jangan taruh nomor pribadi di kode).
+  if (!p.getProperty("NO_WA_DARURAT")) p.setProperty("NO_WA_DARURAT", "");
+  if (!p.getProperty("NO_WA_ADMIN")) p.setProperty("NO_WA_ADMIN", "");
+  if (!p.getProperty("LINK_GRUP_WA")) p.setProperty("LINK_GRUP_WA", "");
   Logger.log("Setup selesai. Password admin awal: " + p.getProperty("ADMIN_PASSWORD"));
   Logger.log("GANTI password ini lewat panel admin setelah login pertama.");
 }
@@ -196,21 +200,28 @@ function daftarPerangkat(data) {
   const ada = cariPerangkat(data.deviceId);
   if (ada) return jsonOutput({ status: "success", deviceStatus: ada.status, message: "Perangkat sudah terdaftar (" + ada.status + ")." });
   const now = new Date();
-  getSheetPerangkat().appendRow([String(data.deviceId), per.id, per.nama, "pending", now, now]);
+  getSheetPerangkat().appendRow([String(data.deviceId), per.id, per.nama, "pending", now, now, String(data.noWa || "")]);
   return jsonOutput({ status: "success", deviceStatus: "pending", message: "Pendaftaran terkirim. Menunggu persetujuan admin." });
 }
 
+/* Kontak darurat WhatsApp untuk halaman personel (tanpa kredensial admin). */
+function kontakDaruratPublik() {
+  const set = getPengaturan();
+  return { noWaDarurat: set.noWaDarurat, noWaAdmin: set.noWaAdmin, linkGrupWa: set.linkGrupWa, namaInstansi: set.namaInstansi };
+}
+
 function cekPerangkat(data) {
+  const kontak = kontakDaruratPublik();
   const dev = cariPerangkat(data.deviceId);
-  if (!dev) return jsonOutput({ status: "success", terdaftar: false });
-  return jsonOutput({ status: "success", terdaftar: true, deviceStatus: dev.status, personelId: dev.personelId, nama: dev.nama });
+  if (!dev) return jsonOutput({ status: "success", terdaftar: false, kontak: kontak });
+  return jsonOutput({ status: "success", terdaftar: true, deviceStatus: dev.status, personelId: dev.personelId, nama: dev.nama, noWa: dev.noWa, kontak: kontak });
 }
 
 function getDataPerangkat() {
   const values = getSheetPerangkat().getDataRange().getValues();
   values.shift();
   return values.map(function (r, i) {
-    return { rowIndex: i + 2, deviceId: String(r[0]), personelId: String(r[1] || ""), nama: r[2], status: r[3], didaftarkan: r[4] };
+    return { rowIndex: i + 2, deviceId: String(r[0]), personelId: String(r[1] || ""), nama: r[2], status: r[3], didaftarkan: r[4], noWa: String(r[6] || "") };
   });
 }
 function cariPerangkat(deviceId) {
@@ -524,7 +535,7 @@ function adminData(data) {
   return jsonOutput({
     status: "success",
     perangkat: getDataPerangkat().map(function (d) {
-      return { deviceId: d.deviceId, personelId: d.personelId, nama: d.nama, status: d.status, didaftarkan: d.didaftarkan instanceof Date ? fmt(d.didaftarkan, "yyyy-MM-dd HH:mm") : d.didaftarkan };
+      return { deviceId: d.deviceId, personelId: d.personelId, nama: d.nama, status: d.status, didaftarkan: d.didaftarkan instanceof Date ? fmt(d.didaftarkan, "yyyy-MM-dd HH:mm") : d.didaftarkan, noWa: d.noWa };
     }),
     personel: getPersonel().map(function (x) { return { id: x.id, nama: x.nama, jabatan: x.jabatan, aktif: x.aktif }; }),
     pengaturan: getPengaturanPublic(),
@@ -656,6 +667,9 @@ function simpanPengaturan(data) {
   if (data.namaKoordinator !== undefined) p.setProperty("NAMA_KOORDINATOR", String(data.namaKoordinator));
   if (data.namaPengesah !== undefined) p.setProperty("NAMA_PENGESAH", String(data.namaPengesah));
   if (data.jabatanPengesah !== undefined) p.setProperty("JABATAN_PENGESAH", String(data.jabatanPengesah));
+  if (data.noWaDarurat !== undefined) p.setProperty("NO_WA_DARURAT", String(data.noWaDarurat));
+  if (data.noWaAdmin !== undefined) p.setProperty("NO_WA_ADMIN", String(data.noWaAdmin));
+  if (data.linkGrupWa !== undefined) p.setProperty("LINK_GRUP_WA", String(data.linkGrupWa));
   if (data.tolTelat !== undefined && data.tolTelat !== "") p.setProperty("TOL_TELAT", String(parseInt(data.tolTelat, 10) || 0));
   if (data.tolCepat !== undefined && data.tolCepat !== "") p.setProperty("TOL_CEPAT", String(parseInt(data.tolCepat, 10) || 0));
   if (data.abaikanLokasi !== undefined) p.setProperty("ABAIKAN_LOKASI", data.abaikanLokasi ? "true" : "false");
@@ -752,7 +766,10 @@ function getPengaturan() {
     abaikanLokasi: (p.getProperty("ABAIKAN_LOKASI") || "true") === "true",
     namaKoordinator: p.getProperty("NAMA_KOORDINATOR") || "",
     namaPengesah: p.getProperty("NAMA_PENGESAH") || "",
-    jabatanPengesah: p.getProperty("JABATAN_PENGESAH") || "Kasub Bagian Umum"
+    jabatanPengesah: p.getProperty("JABATAN_PENGESAH") || "Kasub Bagian Umum",
+    noWaDarurat: p.getProperty("NO_WA_DARURAT") || "",
+    noWaAdmin: p.getProperty("NO_WA_ADMIN") || "",
+    linkGrupWa: p.getProperty("LINK_GRUP_WA") || ""
   };
 }
 function getPengaturanPublic() {
@@ -761,7 +778,8 @@ function getPengaturanPublic() {
     lat: isNaN(s.lat) ? "" : s.lat, lng: isNaN(s.lng) ? "" : s.lng, radius: s.radius || "",
     namaInstansi: s.namaInstansi, tolTelat: s.tolTelat, tolCepat: s.tolCepat,
     abaikanLokasi: s.abaikanLokasi, adminEmail: getAdminEmail(),
-    namaKoordinator: s.namaKoordinator, namaPengesah: s.namaPengesah, jabatanPengesah: s.jabatanPengesah
+    namaKoordinator: s.namaKoordinator, namaPengesah: s.namaPengesah, jabatanPengesah: s.jabatanPengesah,
+    noWaDarurat: s.noWaDarurat, noWaAdmin: s.noWaAdmin, linkGrupWa: s.linkGrupWa
   };
 }
 

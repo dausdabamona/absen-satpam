@@ -575,6 +575,20 @@ table.grid-jadwal .th-akhir-pekan { color: var(--merah); }
 .modal-kotak h3 { margin-top: 0; }
 .modal-aksi { display: flex; gap: 10px; margin-top: 18px; }
 
+/* ---------- Tombol panik darurat (WhatsApp) ---------- */
+.darurat-aksi { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.darurat-aksi .btn { width: 100%; }
+.fab-darurat {
+  position: fixed; right: 16px; bottom: 18px; z-index: 40;
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 56px; padding: 0 20px;
+  background: var(--merah); color: #fff; border: 0; border-radius: 999px;
+  font-family: inherit; font-weight: 800; font-size: 20px; line-height: 1;
+  box-shadow: var(--bayang-kuat); cursor: pointer;
+}
+.fab-darurat span { font-size: 14px; letter-spacing: .5px; }
+.fab-darurat:active { filter: brightness(.92); }
+
 .dua-kolom { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .tanda-aktif { color: var(--hijau-2); font-weight: 700; }
 .tanda-nonaktif { color: var(--teks-lembut); }
@@ -666,7 +680,7 @@ table.lap-grid .status-mini { font-size: 8.5px; display: block; line-height: 1; 
 @media print {
   @page { size: A4 landscape; margin: 10mm; }
   body { background: #fff; }
-  .no-print, .lap-toolbar, .app-header, .admin-topbar, .sidebar { display: none !important; }
+  .no-print, .lap-toolbar, .app-header, .admin-topbar, .sidebar, .fab-darurat { display: none !important; }
   .lap-halaman { box-shadow: none; margin: 0; padding: 0; max-width: none; width: 100%; }
   table.lap-grid { font-size: 9.5px; }
   table.lap-grid .lap-hadir { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

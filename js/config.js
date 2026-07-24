@@ -14,7 +14,13 @@ const CONFIG = {
   LABEL_ZONA: "WIT",
 
   // Pengingat jurnal patroli (menit). 120 = setiap 2 jam.
-  INTERVAL_PATROLI_MENIT: 120
+  INTERVAL_PATROLI_MENIT: 120,
+
+  // Fallback kontak darurat bila backend & cache kosong (mis. saat baru pertama
+  // buka & server tak terjangkau). Repo publik — JANGAN taruh nomor pribadi
+  // sensitif; kosongkan atau isi nomor pos/koordinator umum saja.
+  NO_WA_DARURAT_FALLBACK: "",   // mis. "6281234567890"
+  LINK_GRUP_WA_FALLBACK: ""     // mis. "https://chat.whatsapp.com/xxxxxxxx"
 };
 
 /* Definisi shift — HARUS sama dgn SHIFT_DEF di Code.gs */

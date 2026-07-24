@@ -28,6 +28,56 @@
   }
   function ymdWIT(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
 
+  /* ---------- WhatsApp & kontak darurat ---------- */
+  function normalWa(raw) {
+    var d = String(raw || "").replace(/\D/g, "");   // digit saja
+    if (!d) return "";
+    if (d.indexOf("62") === 0) return d;             // sudah format internasional
+    if (d.charAt(0) === "0") return "62" + d.slice(1);
+    if (d.charAt(0) === "8") return "62" + d;        // "812..." tanpa 0 depan
+    return d;
+  }
+  function waPersonal(nomor, teks) {
+    var n = normalWa(nomor);
+    return n ? "https://wa.me/" + n + "?text=" + encodeURIComponent(teks) : "";
+  }
+  function waShare(teks) { return "https://wa.me/?text=" + encodeURIComponent(teks); }
+
+  /* Kontak darurat: sumber prioritas live → cache localStorage → CONFIG fallback,
+     agar tombol panik tetap jalan walau backend tak terjangkau. */
+  var kontakDarurat = null;
+  function bacaCacheKontak() {
+    try { kontakDarurat = JSON.parse(localStorage.getItem("satpam_kontak_darurat") || "null"); }
+    catch (e) { kontakDarurat = null; }
+  }
+  function simpanCacheKontak() {
+    try { localStorage.setItem("satpam_kontak_darurat", JSON.stringify(kontakDarurat || {})); } catch (e) {}
+  }
+  function gabungKontak(r) {
+    if (!kontakDarurat) kontakDarurat = {};
+    if (r && r.kontak) {
+      kontakDarurat.noWaDarurat = r.kontak.noWaDarurat || "";
+      kontakDarurat.noWaAdmin = r.kontak.noWaAdmin || "";
+      kontakDarurat.linkGrupWa = r.kontak.linkGrupWa || "";
+      kontakDarurat.namaInstansi = r.kontak.namaInstansi || kontakDarurat.namaInstansi || "";
+    }
+    if (r && r.nama) kontakDarurat.nama = r.nama;
+    if (r && r.noWa) kontakDarurat.noWa = r.noWa;
+    simpanCacheKontak();
+  }
+  function noWaTarget() {
+    var k = kontakDarurat || {};
+    return k.noWaDarurat || k.noWaAdmin || CONFIG.NO_WA_DARURAT_FALLBACK || "";
+  }
+  function noWaAdminKontak() {
+    var k = kontakDarurat || {};
+    return k.noWaAdmin || k.noWaDarurat || CONFIG.NO_WA_DARURAT_FALLBACK || "";
+  }
+  function linkGrupKontak() {
+    var k = kontakDarurat || {};
+    return k.linkGrupWa || CONFIG.LINK_GRUP_WA_FALLBACK || "";
+  }
+
   function setMuat(btn, muat, teks) {
     if (!btn) return;
     if (muat) {
@@ -117,9 +167,11 @@
   }
 
   function mulai() {
-    if (API.belumDikonfigurasi()) { tampilkanLayar("layar-konfig"); return; }
+    if (API.belumDikonfigurasi()) { tampilkanLayar("layar-konfig"); perbaruiTautanKontak(); return; }
     tampilkanLayar("layar-loading");
     API.post({ action: "cekPerangkat" }).then(function (r) {
+      if (r && r.status === "success") gabungKontak(r);
+      perbaruiTautanKontak();
       if (!r || r.status !== "success") { tampilkanLayar("layar-daftar"); muatDaftarPersonel(); return; }
       if (!r.terdaftar) { tampilkanLayar("layar-daftar"); muatDaftarPersonel(); return; }
       if (r.deviceStatus === "disetujui") { bukaAplikasi(); return; }
@@ -128,10 +180,77 @@
       $("pendingNama").textContent = r.nama || "-";
       tampilkanLayar("layar-pending");
     }).catch(function () {
+      perbaruiTautanKontak();
       tampilkanLayar("layar-daftar"); muatDaftarPersonel();
       pesan($("pesan-daftar"), "error", ERR_JARINGAN);
     });
   }
+
+  /* ---------- Pesan & tautan darurat ---------- */
+  function pesanDarurat(lok) {
+    var d = sekarangWIT();
+    var waktu = NAMA_HARI[d.getDay()] + ", " + d.getDate() + " " + NAMA_BULAN[d.getMonth()] + " " +
+      d.getFullYear() + " " + pad2(d.getHours()) + "." + pad2(d.getMinutes()) + " " + CONFIG.LABEL_ZONA;
+    var k = kontakDarurat || {};
+    var nama = k.nama || "(personel belum terdaftar)";
+    var baris = [
+      "🆘 DARURAT — butuh bantuan segera!",
+      "Dari: " + nama + (k.noWa ? " (" + k.noWa + ")" : ""),
+      "Instansi: " + (k.namaInstansi || "Absen Satpam — Piket Pos"),
+      "Waktu: " + waktu
+    ];
+    baris.push(lok ? "Lokasi: https://maps.google.com/?q=" + lok.lat + "," + lok.lng
+                   : "Lokasi: (GPS tidak tersedia)");
+    return baris.join("\n");
+  }
+
+  /* Tautan "Hubungi Admin via WhatsApp" pada layar pending/blokir/footer. */
+  function perbaruiTautanKontak() {
+    var k = kontakDarurat || {};
+    var nama = k.nama || "(personel)";
+    var teks = "Halo Admin, saya " + nama + " butuh bantuan terkait aplikasi Absen Satpam.";
+    var url = waPersonal(noWaAdminKontak(), teks);
+    ["waPendingAdmin", "waBlokirAdmin", "waFooterAdmin"].forEach(function (id) {
+      var el = $(id);
+      if (!el) return;
+      if (url) { el.href = url; el.classList.remove("tersembunyi"); }
+      else el.classList.add("tersembunyi");
+    });
+  }
+
+  /* Tombol di dalam modal darurat. Dibangun tanpa lokasi dulu (langsung bisa
+     ditekan), lalu diperbarui saat GPS tersedia. */
+  function perbaruiTautanDarurat(lok) {
+    var teks = pesanDarurat(lok);
+    var target = noWaTarget();
+    var elKoor = $("waKoordinator");
+    if (elKoor) {
+      if (target) elKoor.href = waPersonal(target, teks);
+      else elKoor.removeAttribute("href");
+    }
+    var elGrup = $("waGrupShare");
+    if (elGrup) elGrup.href = waShare(teks);   // share-sheet → pilih grup/chat (selalu jalan tanpa nomor)
+    var elBuka = $("waBukaGrup");
+    var grup = linkGrupKontak();
+    if (elBuka) {
+      if (grup) { elBuka.href = grup; elBuka.classList.remove("tersembunyi"); }
+      else elBuka.classList.add("tersembunyi");
+    }
+  }
+
+  function bukaDarurat() {
+    perbaruiTautanDarurat(null);                 // siap tekan seketika
+    var info = $("daruratInfoLokasi");
+    if (info) info.textContent = "Mendeteksi lokasi… (boleh langsung kirim)";
+    tampil($("modalDarurat"), true);
+    ambilLokasi(function (lok) {                  // prefetch GPS di latar
+      perbaruiTautanDarurat(lok);
+      if (info) info.textContent = lok
+        ? "✓ Lokasi terpasang di pesan."
+        : "Lokasi tidak tersedia — pesan tetap bisa dikirim.";
+    });
+  }
+  function tutupDarurat() { tampil($("modalDarurat"), false); }
 
   /* ---------- Pendaftaran ---------- */
   function muatDaftarPersonel() {
@@ -158,10 +277,12 @@
   function daftarkan() {
     var id = $("pilihPersonel").value;
     if (!id) { pesan($("pesan-daftar"), "error", "Pilih nama Anda terlebih dahulu."); return; }
+    var noWa = normalWa($("noWaDaftar").value);
+    if (!noWa || noWa.length < 10) { pesan($("pesan-daftar"), "error", "Nomor WhatsApp wajib diisi dengan benar (mis. 0812xxxxxxx)."); return; }
     var btn = $("btnDaftar");
     setMuat(btn, true, "Mendaftar…");
     pesanKosong($("pesan-daftar"));
-    API.post({ action: "daftarPerangkat", personelId: id }).then(function (r) {
+    API.post({ action: "daftarPerangkat", personelId: id, noWa: noWa }).then(function (r) {
       if (r && r.status === "success") {
         $("pendingNama").textContent = $("pilihPersonel").options[$("pilihPersonel").selectedIndex].text.split(" — ")[0];
         tampilkanLayar("layar-pending");
@@ -517,9 +638,15 @@
   document.addEventListener("DOMContentLoaded", function () {
     if (cekRedirect()) return;
     mulaiJam();
+    bacaCacheKontak();                 // siapkan kontak darurat dari cache (tahan offline)
+    perbaruiTautanKontak();
+    perbaruiTautanDarurat(null);
     $("btnDaftar").addEventListener("click", daftarkan);
     $("pilihPersonel").addEventListener("change", function () { $("btnDaftar").disabled = !this.value; });
     $("btnCekUlang").addEventListener("click", mulai);
+    $("btnDarurat").addEventListener("click", bukaDarurat);
+    $("daruratTutup").addEventListener("click", tutupDarurat);
+    $("modalDarurat").addEventListener("click", function (e) { if (e.target === this) tutupDarurat(); });
     mulai();
   });
 

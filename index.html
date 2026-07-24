@@ -54,6 +54,11 @@
             <option value="">— memuat daftar… —</option>
           </select>
         </div>
+        <div class="form-grup">
+          <label class="form-label" for="noWaDaftar">Nomor WhatsApp Anda</label>
+          <input type="tel" id="noWaDaftar" inputmode="numeric" autocomplete="tel" placeholder="mis. 0812xxxxxxx">
+          <p class="bantuan">Dipakai untuk kontak &amp; pesan darurat. Wajib diisi.</p>
+        </div>
         <button class="btn btn-primary" id="btnDaftar" disabled>Daftarkan Perangkat</button>
       </div>
     </div>
@@ -65,6 +70,7 @@
       <p>Pendaftaran atas nama <strong id="pendingNama">—</strong> sudah terkirim.<br>
          Silakan hubungi admin/koordinator untuk menyetujui perangkat ini.</p>
       <button class="btn btn-garis btn-kecil inline-auto" id="btnCekUlang">Cek Status Lagi</button>
+      <a class="btn btn-primary btn-kecil inline-auto tersembunyi" id="waPendingAdmin" target="_blank" rel="noopener">💬 Hubungi Admin via WhatsApp</a>
     </div>
 
     <!-- Diblokir -->
@@ -72,6 +78,7 @@
       <div class="emoji">🚫</div>
       <h2>Perangkat Diblokir</h2>
       <p>Perangkat ini diblokir admin. Hubungi koordinator bila ini keliru.</p>
+      <a class="btn btn-primary btn-kecil inline-auto tersembunyi" id="waBlokirAdmin" target="_blank" rel="noopener">💬 Hubungi Koordinator via WhatsApp</a>
     </div>
 
     <!-- Aplikasi utama -->
@@ -222,6 +229,26 @@
 
     <div class="footer-admin" id="footerAdmin">
       <a href="admin.html">🔐 Masuk sebagai Admin</a>
+      <a class="tersembunyi" id="waFooterAdmin" target="_blank" rel="noopener">💬 Hubungi Admin (WA)</a>
+    </div>
+
+    <!-- Tombol panik darurat — selalu tampil (di luar semua #layar-*) -->
+    <button type="button" class="fab-darurat" id="btnDarurat" aria-label="Kirim pesan darurat">🆘<span>DARURAT</span></button>
+
+    <!-- Modal darurat -->
+    <div id="modalDarurat" class="modal-latar tersembunyi">
+      <div class="modal-kotak">
+        <h3>🆘 Kirim Pesan Darurat</h3>
+        <p class="keterangan" id="daruratInfoLokasi">Mendeteksi lokasi…</p>
+        <div class="darurat-aksi">
+          <a class="btn btn-merah" id="waKoordinator" target="_blank" rel="noopener">📤 Kirim ke Koordinator/Admin</a>
+          <a class="btn btn-kuning" id="waGrupShare" target="_blank" rel="noopener">👥 Kirim ke Grup (pilih chat)</a>
+          <a class="btn btn-garis tersembunyi" id="waBukaGrup" target="_blank" rel="noopener">🔗 Buka Grup Darurat</a>
+        </div>
+        <div class="modal-aksi">
+          <button class="btn btn-abu" id="daruratTutup">Tutup</button>
+        </div>
+      </div>
     </div>
   </div><!-- /wadah -->
 

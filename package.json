@@ -8,6 +8,7 @@
     "gas:login": "clasp login",
     "gas:logout": "clasp logout",
     "gas:whoami": "clasp show-authorized-user",
+    "gas:bind": "node scripts/bind-clasp.mjs",
     "gas:status": "clasp status",
     "gas:push": "clasp push -f",
     "gas:deploy": "clasp deploy -d \"Absen Satpam\"",

@@ -85,12 +85,25 @@ Prasyarat: **Node.js**, dan **Apps Script API** diaktifkan sekali di
 ```bash
 npm install                 # memasang clasp (devDependency)
 npm run gas:login           # login akun Google pemilik project Apps Script
+npm run gas:bind -- <SCRIPT_ID>   # arahkan .clasp.json ke bound script sheet ini
 npm run gas:status          # cek: yang di-push hanya google-apps-script/Code.gs + appsscript.json
 npm run gas:push            # unggah Code.gs ke project
 ```
 
-`.clasp.json` sudah menunjuk ke project Apps Script (field `scriptId`).
-Ganti `scriptId` bila memakai project lain.
+**Bind ke sheet tujuan.** Karena `Code.gs` memakai
+`SpreadsheetApp.getActiveSpreadsheet()`, script harus **menempel (bound)** pada
+Google Sheet-nya. `.clasp.json` butuh **`scriptId`** — yaitu ID *bound script*,
+**bukan** ID spreadsheet di URL. Ambil `scriptId`:
+
+1. Buka sheet → **Ekstensi → Apps Script** (bound script otomatis dibuat bila
+   belum ada).
+2. Ikon **⚙️ Setelan Project** → salin **ID** di bagian *Script*.
+3. `npm run gas:bind -- <SCRIPT_ID>` (menulis `scriptId` ke `.clasp.json`), atau
+   edit `.clasp.json` manual.
+
+> Alternatif otomatis untuk sheet baru (belum punya bound script): hapus dulu
+> `.clasp.json`, lalu `npx clasp create --parentId <SPREADSHEET_ID> --rootDir google-apps-script`
+> — clasp membuat bound script dan menulis `scriptId` sendiri.
 
 Setelah push, **jalankan `setup` sekali**: buka editor (`npx clasp open-script`)
 → pilih fungsi `setup` → **Run** → izinkan akses. Ini membuat tab + seed +

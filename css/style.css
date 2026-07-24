@@ -104,6 +104,15 @@ a { color: var(--biru); }
   margin: 0 auto;
   padding: 14px 12px 90px;
 }
+.footer-admin { text-align: center; margin-top: 8px; }
+.footer-admin a {
+  color: var(--teks-lembut);
+  font-size: 13px;
+  text-decoration: none;
+  display: inline-block;
+  padding: 8px 14px;
+}
+.footer-admin a:hover { color: var(--hijau); text-decoration: underline; }
 
 /* ---------- Kartu ---------- */
 .kartu {

@@ -111,6 +111,9 @@
   var semuaLayar = ["layar-loading", "layar-konfig", "layar-daftar", "layar-pending", "layar-blokir", "layar-utama"];
   function tampilkanLayar(id) {
     for (var i = 0; i < semuaLayar.length; i++) tampil($(semuaLayar[i]), semuaLayar[i] === id);
+    // Sembunyikan tautan admin saat aplikasi personel aktif; tampilkan di layar lain.
+    var fa = $("footerAdmin");
+    if (fa) fa.classList.toggle("tersembunyi", id === "layar-utama");
   }
 
   function mulai() {
@@ -495,9 +498,10 @@
      REDIRECT desktop / admin → admin.html
      ============================================================ */
   function perangkatDesktop() {
+    // Layar lebar dianggap desktop/admin (abaikan layar sentuh — banyak laptop
+    // kini bersentuhan). HP satpam selalu di bawah ambang ini.
     var lebar = window.innerWidth || document.documentElement.clientWidth || 0;
-    var adaSentuh = ("ontouchstart" in window) || (navigator.maxTouchPoints > 0);
-    return lebar >= 1024 && !adaSentuh;
+    return lebar >= 1024;
   }
   function cekRedirect() {
     var params = window.location.search;

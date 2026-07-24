@@ -87,7 +87,12 @@
       } else {
         pesan($("pesan-login"), "error", (r && r.message) || "Login gagal.");
       }
-    }).catch(function () { pesan($("pesan-login"), "error", ERR_JARINGAN); })
+    }).catch(function () {
+      pesan($("pesan-login"), "error",
+        "Gagal terhubung ke server. Periksa koneksi internet. Bila internet normal, "
+        + "pastikan Web App Apps Script sudah di-deploy dengan akses “Anyone / Siapa saja” "
+        + "dan Secret APPS_SCRIPT_URL memakai URL /exec yang benar.");
+    })
       .then(function () { setMuat(btn, false); });
   }
 

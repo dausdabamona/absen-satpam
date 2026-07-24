@@ -210,6 +210,7 @@ hadir/parsial/mangkir/izin, plus kolom ringkasan & blok tanda tangan.
 |---|---|
 | `clasp push`: *"User has not enabled the Apps Script API"* | Aktifkan di <https://script.google.com/home/usersettings>, tunggu ~1 menit |
 | Frontend: "Server belum dikonfigurasi" | Secret `APPS_SCRIPT_URL` belum diisi / belum deploy ulang Pages |
+| Login/absen gagal + Console browser: *"No 'Access-Control-Allow-Origin' header"* dan `POST … 401 (Unauthorized)` | **Deployment web app tidak dapat diakses publik.** Buka editor Apps Script → **Deploy → Manage deployments** → ✏️ edit deployment aktif → **Execute as: Me**, **Who has access: Anyone** → set **Version: New version** → **Deploy**. Pastikan Secret `APPS_SCRIPT_URL` memakai URL `/exec` (bukan `/dev`). Selesai deploy, otorisasi ulang bila diminta. |
 | Absen ditolak "di luar area pos" | Set lokasi & radius benar, atau hidupkan Mode Uji Coba sementara |
 | "Tidak ada jadwal piket di sekitar waktu ini" | Jadwal bulan itu belum diisi, atau ada tukar piket yang belum dicatat |
 | Personel tak muncul di daftar | Pastikan personel **Aktif** di menu Personel |

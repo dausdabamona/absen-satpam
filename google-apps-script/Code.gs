@@ -255,13 +255,19 @@ function menitKeJam(m) {
 }
 
 /* ====================== JADWAL =========================== */
+/* Normalisasi nilai kolom "Bulan": Google Sheets sering meng-otomatis-ubah
+   teks "2026-07" menjadi Date. Kembalikan selalu "YYYY-MM". */
+function bulanSel(v) {
+  if (v instanceof Date) return fmt(v, "yyyy-MM");
+  return String(v == null ? "" : v).trim().substring(0, 7);
+}
 function getJadwalBulan(bulan) {
   // -> { "P1": {nama, shifts: [31 x kode]} , ... }
   const values = getSheetJadwal().getDataRange().getValues();
   values.shift();
   const out = {};
   values.forEach(function (r) {
-    if (String(r[0]).trim() !== bulan) return;
+    if (bulanSel(r[0]) !== bulan) return;
     const id = String(r[1]).trim();
     if (!id) return;
     const shifts = [];
@@ -553,7 +559,7 @@ function simpanJadwal(data) {
   // Hapus baris bulan tsb (dari bawah agar index tidak bergeser), lalu tulis ulang.
   const values = sheet.getDataRange().getValues();
   for (var i = values.length - 1; i >= 1; i--) {
-    if (String(values[i][0]).trim() === bulan) sheet.deleteRow(i + 1);
+    if (bulanSel(values[i][0]) === bulan) sheet.deleteRow(i + 1);
   }
   data.baris.forEach(function (b) {
     const per = cariPersonel(b.id);

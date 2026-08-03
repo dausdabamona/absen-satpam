@@ -89,8 +89,8 @@
     API.post(payload).then(function (r) {
       if (!r || r.status !== "success") { pesan($("pesan-rekap"), "error", (r && r.message) || "Gagal memuat data."); $("tbodyRekap").innerHTML = ""; return; }
       isAdmin = !!r.isAdmin;
-      $("statusAkses").innerHTML = isAdmin ? '<span class="tanda-aktif">✓ Mode admin (semua personel)</span>' : '<span class="text-lembut">Data perangkat ini saja</span>';
-      if (ADMIN_PW && !isAdmin) pesan($("pesan-rekap"), "error", "Password admin salah — menampilkan data perangkat ini saja.");
+      $("statusAkses").innerHTML = isAdmin ? '<span class="tanda-aktif">✓ Mode admin/operator (semua personel)</span>' : '<span class="text-lembut">Data perangkat ini saja</span>';
+      if (ADMIN_PW && !isAdmin) pesan($("pesan-rekap"), "error", "Password admin/operator salah — menampilkan data perangkat ini saja.");
       tampil($("wadahFilterPersonel"), isAdmin);
       dataMentah = r.data || [];
       render();

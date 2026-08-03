@@ -489,7 +489,7 @@ function izin(data) {
 
 /* ====================== REKAP =========================== */
 function rekapData(data, namaSheet, header) {
-  const isAdmin = data.adminPassword && data.adminPassword === getAdminPassword();
+  const isAdmin = passwordAdminAtauOperator(data.adminPassword);
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(namaSheet);
   if (!sheet) return jsonOutput({ status: "success", data: [], isAdmin: !!isAdmin });
   const values = sheet.getDataRange().getValues();
@@ -714,6 +714,18 @@ function getOperator() {
 function cariOperator(email) {
   const e = String(email || "").trim().toLowerCase();
   return getOperator().filter(function (o) { return o.email.toLowerCase() === e; })[0] || null;
+}
+/* Untuk halaman Rekap yang hanya mengirim password (tanpa email):
+   terima password admin utama ATAU password operator aktif mana pun. */
+function passwordAdminAtauOperator(pw) {
+  if (!pw) return false;
+  pw = String(pw);
+  if (pw === getAdminPassword()) return true;
+  const ops = getOperator();
+  for (var i = 0; i < ops.length; i++) {
+    if (ops[i].aktif && ops[i].password && ops[i].password === pw) return true;
+  }
+  return false;
 }
 function simpanOperator(data) {
   if (!isPrimaryAdmin(data)) return jsonOutput({ status: "error", message: "Hanya admin utama yang dapat mengelola operator." });

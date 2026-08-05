@@ -6,13 +6,17 @@ REM ============================================================
 REM  Deploy backend Absen Satpam ke Google Apps Script
 REM  Cara pakai: taruh file ini di folder proyek (yang ada
 REM  .clasp.json), lalu dobel-klik atau jalankan: deploy.bat
+REM
+REM  Akses "Anyone" (anonim penuh) kini otomatis dari
+REM  appsscript.json ("access": "ANYONE_ANONYMOUS"), jadi tidak
+REM  perlu set manual lagi tiap deploy.
 REM  Ubah 2 baris SET di bawah bila ID deployment / branch beda.
 REM ============================================================
 
 set "DEPLOY_ID=AKfycbzLdo7MQtfyi4ji502o6UvSYZF0CwHgDiZNdzTpeLs1NcWt0ciZIYJR1nV3nkwZDQ5i"
 set "BRANCH=claude/cek-6f7m12"
+set "SITUS=https://dausdabamona.github.io/absen-satpam/"
 
-REM Pindah ke folder tempat deploy.bat ini berada
 cd /d "%~dp0"
 
 if not exist ".clasp.json" (
@@ -33,27 +37,27 @@ git pull origin %BRANCH%
 if errorlevel 1 goto gagal_git
 echo.
 
-echo [2/3] Unggah Code.gs ke Apps Script (clasp push)...
+echo [2/3] Unggah Code.gs + appsscript.json ke Apps Script...
 call clasp push -f
 if errorlevel 1 goto gagal_push
 echo.
 
-echo [3/3] Buat versi baru deployment (clasp redeploy)...
+echo [3/3] Buat versi baru deployment (URL /exec tetap sama)...
 call clasp redeploy %DEPLOY_ID% -d "update via deploy.bat"
 if errorlevel 1 goto gagal_redeploy
 echo.
 
 echo ============================================================
-echo   SELESAI - kode backend sudah di-deploy.
+echo   SELESAI - backend sudah di-deploy dengan akses publik.
 echo.
-echo   CEK TERAKHIR (agar tidak "Gagal terhubung"):
-echo   Editor Apps Script ^> Deploy ^> Manage deployments ^> Edit
-echo     Execute as     : Me
-echo     Who has access : Anyone
-echo   lalu klik Deploy.
+echo   Akses "Anyone" sudah otomatis (dari appsscript.json),
+echo   jadi TIDAK perlu set manual lagi.
 echo.
-echo   Terakhir: REFRESH aplikasi (Ctrl+F5 / tutup-buka).
+echo   Membuka situs untuk verifikasi...
+echo   -^> Di browser, tekan Ctrl+F5 (refresh buang cache),
+echo      dropdown nama harus terisi (bukan "gagal memuat").
 echo ============================================================
+start "" "%SITUS%"
 echo.
 pause
 exit /b 0
@@ -77,9 +81,8 @@ exit /b 1
 :gagal_redeploy
 echo.
 echo [GAGAL] clasp redeploy bermasalah (sering karena jaringan sesaat).
-echo Selesaikan manual di editor Apps Script:
+echo Coba jalankan deploy.bat lagi setelah internet stabil, atau manual:
 echo   Deploy ^> Manage deployments ^> Edit ^> Version: New version ^> Deploy
-echo   (sekalian set Who has access: Anyone)
 echo.
 pause
 exit /b 1
